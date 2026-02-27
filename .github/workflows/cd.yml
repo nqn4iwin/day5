@@ -79,7 +79,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: day41-45_starter-code
+        working-directory: .
 
     steps:
       - name: Checkout code
