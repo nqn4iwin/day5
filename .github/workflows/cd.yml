@@ -9,7 +9,7 @@
 #   - EC2에서는 Pull만 하면 됨 → 배포 시간 단축 (3분 → 30초)
 #   - 여러 서버 배포 시 한 번만 빌드
 #   - GitHub 통합 (별도 계정 불필요)
-# 
+#
 # 주요 단계:
 #   1. GitHub Actions에서 Docker 이미지 빌드
 #   2. GHCR에 이미지 Push
@@ -29,6 +29,18 @@ name: Lumi Agent CD
 
 # TODO 1: 트리거 설정
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'tests/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/**'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - '.dockerignore'
+      - '!**/*.md'
   # 여기에 구현하세요!
 
   # 수동 실행 허용 (긴급 배포/롤백용)
@@ -42,6 +54,8 @@ on:
 
 # TODO 2: GHCR Push 권한 설정
 permissions:
+  contents: read
+  packages: write
   # 여기에 구현하세요!
 
 # 환경 변수
@@ -63,6 +77,10 @@ jobs:
       image_tag: ${{ steps.meta.outputs.tags }}
       image_digest: ${{ steps.build.outputs.digest }}
 
+    defaults:
+      run:
+        working-directory: day41-45_starter-code
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -75,6 +93,9 @@ jobs:
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
           # 여기에 구현하세요!
 
       # 이미지 태그 생성
@@ -92,6 +113,12 @@ jobs:
         id: build
         uses: docker/build-push-action@v5
         with:
+          context: ./day41-45_starter-code
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha, mode=max
           # 여기에 구현하세요!
 
       - name: Print image info
