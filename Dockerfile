@@ -30,7 +30,7 @@ COPY --from=builder /app/.venv /app/.venv
 COPY app/ ./app/
 
 # daily mission에서는 여기 삭제!
-COPY data/ ./data/
+# COPY data/ ./data/
 
 COPY pyproject.toml README.md ./
 
